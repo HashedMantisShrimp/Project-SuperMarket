@@ -8,12 +8,11 @@ public class ShopKart : MonoBehaviour
     //private bool kartIsTaken = false;
     public Canvas instructions;
     public SoundPlayer soundPlayer;
-    public PickUpItems itemManager;
-    public CartItemManager cartMan;
+   // public PickUpItems itemManager;
+   // public CartItemManager cartMan;
 
     void Start()
     {
-        //soundPlayer = Camera.main.gameObject.GetComponent<SoundPlayer>(); //This is returning null for whatever reason, despite the script being present in the cam.
         if (instructions) {
             instructions.gameObject.SetActive(false);
         }
@@ -22,7 +21,7 @@ public class ShopKart : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-         if (Input.GetKeyDown(KeyCode.F) && playerScript.hasKart) { //Implement mechanic to detach from the cart here.
+         if (Input.GetKeyDown(KeyCode.F) && playerScript.hasKart && (transform.parent != null)) {
              DetachFromParent();
             StartCoroutine(EnableHasKart(false));
              Debug.Log(gameObject + " has detached from its previous parent.");
@@ -53,12 +52,10 @@ public class ShopKart : MonoBehaviour
 
     private void OnTriggerStay(Collider player)
     {
-        GameObject grandParent = player.transform.parent.gameObject; //GrandParent is The actual Player. 'player' is the empty object
-        //Debug.Log("OnTriggerStay ");
+        GameObject grandParent = player.transform.parent.gameObject;
 
         if (grandParent != null)
         {
-            //Display the name of the grand parent of the player.
             //Debug.Log("Player's Grand parent: " + player.transform.parent.name);
 
             if (grandParent.GetComponent<PlayerMovement>())
@@ -71,17 +68,10 @@ public class ShopKart : MonoBehaviour
                     soundPlayer.PlaySoundClip("Pick-Up-Trolley");
                     instructions.gameObject.SetActive(false);
                     StartCoroutine(EnableHasKart(true));
-                    //itemManager = playerScript.gameObject.GetComponent<PickUpItems>();
-                   // itemManager.cartM = this.cartMan;
 
                 }
-
-
             }
         }
-
-
-        
     }
 
     private void OnTriggerExit(Collider player)

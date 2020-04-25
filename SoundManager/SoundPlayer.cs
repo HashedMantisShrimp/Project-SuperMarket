@@ -11,12 +11,6 @@ public class SoundPlayer : MonoBehaviour
     public Sound[] sounds;
     private AudioSource source;
 
-   /* public AudioClip popUp;
-    public AudioClip pickUpTrolley;
-    public AudioClip trolley;
-    public AudioClip outdoorJogging;
-    public AudioClip outdoorWalking;*/
-
     // Start is called before the first frame update
     void Start()
     {

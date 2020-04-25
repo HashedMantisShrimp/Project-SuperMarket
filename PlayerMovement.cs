@@ -15,13 +15,8 @@ public class PlayerMovement : MonoBehaviour {
 
     public bool hasKart = false;// ShopKart uses this bool to check whether or not the player already has a kart
     public SoundPlayer soundPlayer;
+    
 
-    void Start()
-    {
-        //Camera.main.gameObject.AddComponent<AudioSource>;
-    }
-
-    // Update is called once per frame
     void Update () {
 
         float translation = Time.deltaTime*speedMultiplier;
@@ -29,7 +24,7 @@ public class PlayerMovement : MonoBehaviour {
         if ((Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) ||
             Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.E)) && !soundPlayer.isSourcePlaying("Player-Body"))
         {
-            soundPlayer.PlaySoundClip("Outdoor-Walking", true, "Player-Body"); //change with walking sounds
+            soundPlayer.PlaySoundClip("Outdoor-Walking", true, "Player-Body");
             
         }
         else 
@@ -37,7 +32,7 @@ public class PlayerMovement : MonoBehaviour {
            !Input.GetKey(KeyCode.Q) && !Input.GetKey(KeyCode.E)) && soundPlayer.isSourcePlaying("Player-Body"))
         {
             soundPlayer.StopSoundClip("Player-Body");
-            Debug.Log("Sound.stopclip ThingaMaging was called");
+            //Debug.Log("Sound.stopclip ThingaMaging was called");
         }
 
         transform.Rotate(Input.GetAxis("Rotate") * Vector3.up * translation * rotationSpeed); // Rotates on 'Q' & 'E' //Instructions to set up Rotate in the bottom:
