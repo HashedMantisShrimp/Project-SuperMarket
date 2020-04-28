@@ -10,10 +10,17 @@ public class PickUpItems : MonoBehaviour
     private Transform parentTransform;
     private SoundPlayer soundPlayer;
     private PlayerMovement playerScript;
-    
+    private CartItemManager itemManager;
+
+    private void Awake()
+    {
+        gameObject.AddComponent<CartItemManager>();
+    }
+
 
     void Start()
     {
+        itemManager = gameObject.GetComponent<CartItemManager>();
         productScript = Camera.main.GetComponent<Products>();
         soundPlayer = Camera.main.GetComponent<SoundPlayer>();
         instructionsCanvas = FindCanvas();
@@ -32,7 +39,7 @@ public class PickUpItems : MonoBehaviour
 
     private void OnTriggerEnter(Collider objectCollided)
     {
-        if (instructionsCanvas != null && IsTargetTrigger(objectCollided) && playerScript.hasKart)
+        if ((instructionsCanvas != null) && IsTargetTrigger(objectCollided) && playerScript.hasKart)
         {
             instructionsCanvas.SetActive(true);
 
@@ -52,7 +59,8 @@ public class PickUpItems : MonoBehaviour
                 soundPlayer.PlaySoundClip("Box 1");
                 objectCollided.enabled = false;
                 SetChildProductActive(true, true, 1f,"goods-top", productObj.name);
-                Debug.Log("Product acquired, product has name of: " + productObj.name);
+                itemManager.CheckProduct(productObj.name);
+                //Debug.Log("Product acquired, product has name of: " + productObj.name);
             }
         }
     }
@@ -61,6 +69,15 @@ public class PickUpItems : MonoBehaviour
     {
         if (instructionsCanvas != null && instructionsCanvas.activeSelf)
             instructionsCanvas.gameObject.SetActive(false);
+
+        if (itemManager.IsProductChecked("juice"))
+        {
+            Debug.Log("Juice is checked into cart");
+        }
+        else {
+            Debug.Log("Juice is NOT checked into cart");
+        }
+            
     }
 
 
@@ -108,8 +125,8 @@ public class PickUpItems : MonoBehaviour
         }
     }
 
-    private void SetChildProductActive(bool activate, bool deleteChild, float time, string targetChild, string productName)
-    { //actiavtes children with productname and after some time, destroys it
+    private void SetChildProductActive(bool activate, bool deleteFallingChild, float time, string targetChild, string productName)
+    { //actiavtes children with productname and after some time, destroys the "animation" children
         Transform goodsTransfrom = null;
 
         foreach (Transform childOfGameObject in gameObject.transform) {
@@ -124,7 +141,7 @@ public class PickUpItems : MonoBehaviour
                 childProduct = childFound;
                 childProduct.gameObject.SetActive(activate);
 
-                if(deleteChild)
+                if(deleteFallingChild)
                 StartCoroutine(DestroyChild(childProduct, time, true));
                 
             }

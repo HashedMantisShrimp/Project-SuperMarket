@@ -3,18 +3,25 @@ using UnityEngine;
 
 public class Products : MonoBehaviour
 {
-    public GameObject goods; //The GameObject with all the products must be attched here
-    GameObject[] products;
-    private string word;
+    [SerializeField]
+    private GameObject goods = null; //The GameObject with all the products must be attched here
+    internal int AmountOfProducts { get; set; }
+    internal GameObject[] products;
     
+
+    void Awake()
+    {
+        AmountOfProducts = goods.transform.childCount;
+    }
 
     void Start()
     {
-        Array.Resize<GameObject>(ref products, goods.transform.childCount);
+        
+        Array.Resize<GameObject>(ref products, AmountOfProducts);
         AssignChildrenToArray();
     }
 
-    public GameObject GetProduct(string sectionName) {// returns the gameObject of the requested product
+    internal GameObject GetProduct(string sectionName) {// returns the gameObject of the requested product
 
         string productName = GetUntilOrEmpty(sectionName);
         GameObject productObject=null;
@@ -67,3 +74,5 @@ public class Products : MonoBehaviour
         return String.Empty;
     }
 }
+
+

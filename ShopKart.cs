@@ -8,13 +8,12 @@ public class ShopKart : MonoBehaviour
     //private bool kartIsTaken = false;
     public Canvas instructions;
     public SoundPlayer soundPlayer;
-   // public PickUpItems itemManager;
-   // public CartItemManager cartMan;
 
     void Start()
     {
         if (instructions) {
             instructions.gameObject.SetActive(false);
+            gameObject.GetComponent<BoxCollider>().isTrigger = false;
         }
     }
 
@@ -24,6 +23,7 @@ public class ShopKart : MonoBehaviour
          if (Input.GetKeyDown(KeyCode.F) && playerScript.hasKart && (transform.parent != null)) {
              DetachFromParent();
             StartCoroutine(EnableHasKart(false));
+            gameObject.GetComponent<BoxCollider>().enabled = true;
              Debug.Log(gameObject + " has detached from its previous parent.");
          }
 
@@ -38,7 +38,6 @@ public class ShopKart : MonoBehaviour
            !Input.GetKey(KeyCode.Q) && !Input.GetKey(KeyCode.E)) && soundPlayer.isSourcePlaying("Empty-Obj"))
         {
             soundPlayer.StopSoundClip("Empty-Obj");
-            //Debug.Log("ClipStop function for cart was called");
         }
     }
 
@@ -67,8 +66,8 @@ public class ShopKart : MonoBehaviour
                     SetParent(player.gameObject);   //Sets the player's gameObject as parent
                     soundPlayer.PlaySoundClip("Pick-Up-Trolley");
                     instructions.gameObject.SetActive(false);
+                    gameObject.GetComponent<BoxCollider>().enabled = false;
                     StartCoroutine(EnableHasKart(true));
-
                 }
             }
         }
