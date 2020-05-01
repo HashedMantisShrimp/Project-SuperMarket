@@ -1,31 +1,33 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ShopKart : MonoBehaviour
 {
     public PlayerMovement playerScript;
-    //private bool kartIsTaken = false;
     public Canvas instructions;
-    public SoundPlayer soundPlayer;
+    private SoundPlayer soundPlayer;
 
+    #region Init Functions
     void Start()
     {
-        if (instructions) {
+        soundPlayer = FindObjectOfType<SoundPlayer>();
+        if (instructions)
+        {
             instructions.gameObject.SetActive(false);
             gameObject.GetComponent<BoxCollider>().isTrigger = false;
         }
     }
-
-    // Update is called once per frame
+    
     void Update()
     {
-         if (Input.GetKeyDown(KeyCode.F) && playerScript.hasKart && (transform.parent != null)) {
-             DetachFromParent();
+         if (Input.GetKeyDown(KeyCode.F) && playerScript.hasKart && (transform.parent != null))
+         {
+            DetachFromParent();
+
             StartCoroutine(EnableHasKart(false));
             gameObject.GetComponent<BoxCollider>().enabled = true;
-             Debug.Log(gameObject + " has detached from its previous parent.");
-         }
+            //Debug.Log($"{gameObject} has detached from its previous parent.");
+        }
 
         if ((Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) ||
             Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.E))
@@ -40,13 +42,14 @@ public class ShopKart : MonoBehaviour
             soundPlayer.StopSoundClip("Empty-Obj");
         }
     }
+    #endregion
 
+    #region OnTrigger Functions
     private void OnTriggerEnter(Collider player)
     {
         instructions.gameObject.SetActive(true);
-        Debug.Log("Enabled shud have been called");
+        //Debug.Log("Enabled shud have been called");
         soundPlayer.PlaySoundClip("Pop-Up");
-        //insert pop up sound
     }
 
     private void OnTriggerStay(Collider player)
@@ -55,8 +58,6 @@ public class ShopKart : MonoBehaviour
 
         if (grandParent != null)
         {
-            //Debug.Log("Player's Grand parent: " + player.transform.parent.name);
-
             if (grandParent.GetComponent<PlayerMovement>())
             {
                 playerScript = grandParent.GetComponent<PlayerMovement>();
@@ -77,6 +78,9 @@ public class ShopKart : MonoBehaviour
     {
         instructions.gameObject.SetActive(false);
     }
+    #endregion
+
+    #region Miscellaneous Functions
 
     private IEnumerator EnableHasKart(bool cartIsPresent) {
         yield return new WaitForSeconds(.1f);
@@ -87,12 +91,13 @@ public class ShopKart : MonoBehaviour
     public void SetParent(GameObject newParent)
     {
         gameObject.transform.parent = newParent.transform;
-        
-        Debug.Log("Player's Parent: " + gameObject.transform.parent.name);
+
+        // Debug.Log($"Player's Parent: {gameObject.transform.parent.name}");
     }
 
     public void DetachFromParent()
     {
         transform.parent = null;
     }
+    #endregion
 }

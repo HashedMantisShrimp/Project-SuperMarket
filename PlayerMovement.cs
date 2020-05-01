@@ -45,8 +45,9 @@ public class PlayerMovement : MonoBehaviour {
             if (!coolDown) { StartCoroutine(Dash()); } else { Debug.Log("Cannot Dash while on CoolDown"); }
         }
         
-        
 	}
+
+    #region Dash Functions
 
     IEnumerator Dash()
     {
@@ -67,6 +68,8 @@ public class PlayerMovement : MonoBehaviour {
         yield return new WaitForSeconds(secs);
         coolDown = false;
     }
+    #endregion
+
     /*
      *To set up the Rotate Axis, go to Edit->Project settings-> Input Manager->
      * On the Size tab right under 'Axes' add 1 more to whatever the number is, next go to the last Input/tab, should be a second "cancel"

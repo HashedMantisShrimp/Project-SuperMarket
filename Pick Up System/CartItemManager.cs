@@ -7,6 +7,8 @@ public class CartItemManager: MonoBehaviour
     private object [] productStorage;
     private bool storageFilledUp = false;
 
+    #region Init Functions
+
     private void Awake()
     {
         productScript = FindObjectOfType<Products>();
@@ -22,6 +24,8 @@ public class CartItemManager: MonoBehaviour
         if (productScript.products[0] != null && !storageFilledUp)
             FillUpProductStorage();
     }
+
+    #endregion
 
     private void FillUpProductStorage()
     {
@@ -39,17 +43,30 @@ public class CartItemManager: MonoBehaviour
         //Debug.Log("Product Storage filled up");
     }
 
-    internal void CheckProduct(string productName)
+    #region CheckProduct Functions
+
+    internal void CheckProduct(string productName, bool check)
     {
         foreach (ProductInformation item in productStorage)
         {
             if (productName.Equals(item.productName, StringComparison.OrdinalIgnoreCase))
             {
-                item.hasProduct = true;
-                //Debug.Log("Product was checked: " + productName);
+                item.hasProduct = check;
+               // Debug.Log($"Product was (un)checked: {productName}");
             }
         }
     }
+
+    internal void CheckProduct( bool checkAll)
+    {
+        foreach (ProductInformation item in productStorage)
+        {
+            item.hasProduct = checkAll;
+        }
+    }
+    #endregion
+
+    #region IsProductChecked Functions
 
     internal bool IsProductChecked(string productName)
     {
@@ -64,10 +81,27 @@ public class CartItemManager: MonoBehaviour
         }
         return productIsHere;
     }
+
+    internal bool IsAnyProductChecked()
+    {
+        bool anyProductIsPresent = false;
+
+        foreach (ProductInformation item in productStorage)
+        {
+            if (item.hasProduct)
+            {
+                anyProductIsPresent = true;
+                break;
+            }
+        }
+
+        return anyProductIsPresent;
+    }
+    #endregion
 }
 
- class ProductInformation
+class ProductInformation
 {
-     public string productName = String.Empty;
+     internal string productName = string.Empty;
      internal bool hasProduct = false;
 }

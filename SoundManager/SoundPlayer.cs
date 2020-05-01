@@ -1,25 +1,24 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.Audio;
+﻿using UnityEngine.Audio;
 using System;
 using UnityEngine;
 
 public class SoundPlayer : MonoBehaviour
-{
+{//This Script is suppoed to be assigned to the main camera
     public AudioSource mainSource; 
     public Sources[] audioSources;
     public Sound[] sounds;
     private AudioSource source;
 
-    // Start is called before the first frame update
+    
     void Start()
     {
-        GameObject mainCam = this.gameObject;
-
+        GameObject mainCam = gameObject;
         mainCam.AddComponent<AudioSource>();
         mainSource = mainCam.GetComponent<AudioSource>();
+        PlaySoundClip("Environment", true, "Env-Src");
     }
 
+    #region PlaySoundClip Functions
 
     public void PlaySoundClip(string soundName)
     {   
@@ -43,6 +42,9 @@ public class SoundPlayer : MonoBehaviour
         source.clip = FindSound(soundName);
         source.Play();
     }
+    #endregion
+
+    #region StopSoundClip Functions
 
     public void StopSoundClip()
     {
@@ -54,6 +56,7 @@ public class SoundPlayer : MonoBehaviour
         source = FindSource(sourceName);
         source.Stop();
     }
+    #endregion
 
     public bool isSourcePlaying(string sourceName)
     {
@@ -68,12 +71,14 @@ public class SoundPlayer : MonoBehaviour
         }
     }
 
+    #region Find Functions
+
     private AudioClip FindSound(string name)
     {
         Sound soundItem = Array.Find(sounds, sound => sound.title == name);
         if (soundItem == null)
         {
-            Debug.Log("Sound " + name + " Wasnt found.");
+            Debug.Log($"Sound {name} Wasnt found.");
             return null;
         }
         else
@@ -87,7 +92,7 @@ public class SoundPlayer : MonoBehaviour
 
         if (sourceItem == null)
         {
-            Debug.Log("Source " + sourceName + " Wasnt found.");
+            Debug.Log($"Source {sourceName} Wasnt found.");
             return null;
         }
         else
@@ -95,4 +100,5 @@ public class SoundPlayer : MonoBehaviour
             return sourceItem.audioSource;
         }
     }
+    #endregion
 }
