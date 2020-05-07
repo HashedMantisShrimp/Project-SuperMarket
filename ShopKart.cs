@@ -11,6 +11,7 @@ public class ShopKart : MonoBehaviour
     void Start()
     {
         soundPlayer = FindObjectOfType<SoundPlayer>();
+        playerScript = FindObjectOfType<PlayerMovement>();
         if (instructions)
         {
             instructions.gameObject.SetActive(false);
@@ -60,7 +61,7 @@ public class ShopKart : MonoBehaviour
         {
             if (grandParent.GetComponent<PlayerMovement>())
             {
-                playerScript = grandParent.GetComponent<PlayerMovement>();
+                playerScript = grandParent.GetComponent<PlayerMovement>(); //Switch to TryGetComponent?
 
                 if (Input.GetKeyDown(KeyCode.F) && !playerScript.hasKart)
                 {
@@ -82,7 +83,8 @@ public class ShopKart : MonoBehaviour
 
     #region Miscellaneous Functions
 
-    private IEnumerator EnableHasKart(bool cartIsPresent) {
+    private IEnumerator EnableHasKart(bool cartIsPresent)
+    {
         yield return new WaitForSeconds(.1f);
         playerScript.hasKart = cartIsPresent;
     }

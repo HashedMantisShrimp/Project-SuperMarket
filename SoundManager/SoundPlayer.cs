@@ -27,15 +27,16 @@ public class SoundPlayer : MonoBehaviour
         mainSource.Play();
     }
 
-    public void PlaySoundClip(string soundName, bool loop) {
+    public void PlaySoundClip(string soundName, bool loop)
+    {
         mainSource.loop = loop == true ? true : false; 
         mainSource.time = 0;
         mainSource.clip = FindSound(soundName);
         mainSource.Play();
     }
 
-    public void PlaySoundClip(string soundName, bool loop, string sourceName) //ability to loop sounds and choose which soruce to play in
-    {
+    public void PlaySoundClip(string soundName, bool loop, string sourceName)
+    {//ability to loop sounds and choose which soruce to play in
         source = FindSource(sourceName);
         source.loop = loop == true ? true : false;
         source.time = 0;
@@ -76,6 +77,7 @@ public class SoundPlayer : MonoBehaviour
     private AudioClip FindSound(string name)
     {
         Sound soundItem = Array.Find(sounds, sound => sound.title == name);
+
         if (soundItem == null)
         {
             Debug.Log($"Sound {name} Wasnt found.");

@@ -8,16 +8,27 @@ public class PlayerMovement : MonoBehaviour {
 
     private float speedMultiplier = 1;
     public float dashSpeedMultiplier = 5;
-    public float dashDuration = 0.25f; // in seconds
+    public float dashDuration = 0.25f;
 
     private bool coolDown = false;
-    public float coolDownTime = 3; // in seconds
+    public float coolDownTime = 3;
 
-    public bool hasKart = false;// ShopKart uses this bool to check whether or not the player already has a kart
+    public bool hasKart = false;
     public SoundPlayer soundPlayer;
+
+    public bool editorMode = false;
     
 
-    void Update () {
+    void Update ()
+    {
+        if (editorMode)
+        {
+            movementSpeed = 50f;
+        }
+        else
+        {
+            movementSpeed = 20f;
+        }
 
         float translation = Time.deltaTime*speedMultiplier;
 
@@ -32,7 +43,6 @@ public class PlayerMovement : MonoBehaviour {
            !Input.GetKey(KeyCode.Q) && !Input.GetKey(KeyCode.E)) && soundPlayer.isSourcePlaying("Player-Body"))
         {
             soundPlayer.StopSoundClip("Player-Body");
-            //Debug.Log("Sound.stopclip ThingaMaging was called");
         }
 
         transform.Rotate(Input.GetAxis("Rotate") * Vector3.up * translation * rotationSpeed); // Rotates on 'Q' & 'E' //Instructions to set up Rotate in the bottom:
@@ -52,17 +62,15 @@ public class PlayerMovement : MonoBehaviour {
     IEnumerator Dash()
     {
         speedMultiplier = dashSpeedMultiplier;
-        Debug.Log("Dash in progress");
+        Debug.Log("Dash in progress"); //substitute with a way to give feedback to the player
 
         yield return new WaitForSeconds(dashDuration);
         speedMultiplier = 1;
         StartCoroutine(DashCoolDown(coolDownTime));
-
-        // gameObject.transform.position = currentPlayerPos + new Vector3(x, 0, z); //Just teleports player
-
     }
 
-    IEnumerator DashCoolDown(float secs) {
+    IEnumerator DashCoolDown(float secs)
+    {
         Debug.Log("Dash-Cooldown Initiated");
         coolDown = true;
         yield return new WaitForSeconds(secs);

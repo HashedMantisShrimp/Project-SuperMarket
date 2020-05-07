@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CartItemManager: MonoBehaviour
@@ -33,19 +34,21 @@ public class CartItemManager: MonoBehaviour
 
          foreach (GameObject item in productScript.products)
          {
-            ProductInformation productInfo = new ProductInformation();
-            productInfo.productName = item.name;
-            productInfo.hasProduct = false;
+            ProductInformation productInfo = new ProductInformation
+            {
+                productName = item.name,
+                hasProduct = false
+            };
+            
             productStorage[counter] = productInfo;
-             counter++;
+            counter++;
          }
         storageFilledUp = true;
-        //Debug.Log("Product Storage filled up");
     }
 
     #region CheckProduct Functions
 
-    internal void CheckProduct(string productName, bool check)
+    internal void CheckProductIntoCart(string productName, bool check)
     {
         foreach (ProductInformation item in productStorage)
         {
@@ -57,14 +60,28 @@ public class CartItemManager: MonoBehaviour
         }
     }
 
-    internal void CheckProduct( bool checkAll)
-    {
+    internal void CheckOutCartProducts()
+    {//Checks out items in cart as well as quest items
         foreach (ProductInformation item in productStorage)
         {
-            item.hasProduct = checkAll;
+            if (item.hasProduct)
+            item.hasProduct = false;
         }
     }
     #endregion
+
+    internal List<string> ReturnCartProducts()
+    {
+        List<string> productsInCart = new List<string>();
+
+        foreach (ProductInformation product in productStorage)
+        {
+            if (product.hasProduct)
+                productsInCart.Add(product.productName);
+        }
+
+        return productsInCart;
+    }
 
     #region IsProductChecked Functions
 
@@ -94,7 +111,6 @@ public class CartItemManager: MonoBehaviour
                 break;
             }
         }
-
         return anyProductIsPresent;
     }
     #endregion

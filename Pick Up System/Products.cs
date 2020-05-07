@@ -17,7 +17,7 @@ public class Products : MonoBehaviour
 
     void Start()
     {
-        Array.Resize<GameObject>(ref products, AmountOfProducts);
+        Array.Resize(ref products, AmountOfProducts);
         AssignProductsToArray();
     }
 
@@ -33,7 +33,6 @@ public class Products : MonoBehaviour
         {
             foreach (GameObject item in products)
             {
-                //Debug.Log($"product names: {product.name}");
                 if (productName.Equals(item.name, StringComparison.OrdinalIgnoreCase))
                 {
                     productObject = item.gameObject;
@@ -42,6 +41,18 @@ public class Products : MonoBehaviour
             }
         }
         return productObject;
+    }
+
+    internal GameObject ReturnGoods()
+    {
+        if (goods != null)
+        {
+            return goods;
+        }
+        else
+        {
+            return null;
+        }
     }
     
     #region Private Functions
@@ -58,8 +69,8 @@ public class Products : MonoBehaviour
         // Debug.Log($"One of the children is: {products[2].name}");
     }
 
-    private string GetUntilOrEmpty(string text, string stopAt = "-")//checks for where the '-' is and returns everything before it
-    {
+    private string GetUntilOrEmpty(string text, string stopAt = "-")
+    {//checks for where the '-' is and returns everything before it
         if (!string.IsNullOrWhiteSpace(text))
         {
             int charLocation = text.IndexOf(stopAt, StringComparison.Ordinal);
@@ -70,7 +81,6 @@ public class Products : MonoBehaviour
                 return text.Substring(0, charLocation);
             }
         }
-       // Debug.Log("Could not find the new text associated with productName");
         return string.Empty;
     }
     #endregion

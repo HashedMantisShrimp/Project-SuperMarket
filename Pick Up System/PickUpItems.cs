@@ -37,7 +37,6 @@ public class PickUpItems : MonoBehaviour
     {
         if (!playerScript.hasKart && canvasPickUpItems.activeSelf)
         {
-            //Debug.Log("Player has no cart, canvas shud be off");
             canvasPickUpItems.SetActive(false);
         }
     }
@@ -66,9 +65,8 @@ public class PickUpItems : MonoBehaviour
             {
                 canvasPickUpItems.SetActive(false);
                 soundPlayer.PlaySoundClip("Box 1");
-                //objectCollided.enabled = false;
                 SetChildProductActive(true, true, 1f,"goods-top", productObj.name);
-                itemManager.CheckProduct(productObj.name, true);
+                itemManager.CheckProductIntoCart(productObj.name, true);
                 //Debug.Log($"Product acquired, product has name of: { productObj.name}");
             }
         }
@@ -84,8 +82,8 @@ public class PickUpItems : MonoBehaviour
     #region Personalized Functions
 
     #region Miscellaneous Functions
-    private bool IsTargetTrigger(Collider targetCollider) {
-
+    private bool IsTargetTrigger(Collider targetCollider)
+    {
         productObj = productScript.GetProduct(targetCollider.name);
         bool val = productObj !=null ? true : false;
 
@@ -95,17 +93,14 @@ public class PickUpItems : MonoBehaviour
     private GameObject FindCanvas(string canvasName)
     {
         parentTransform = transform.parent;
-        //Debug.Log($"Parent: {parentTransform}");
 
         foreach (Transform child in parentTransform)
         {
             if (child.name == canvasName)
             {
-                //Debug.Log("Found Canvas: {child.name}");
                 return child.gameObject;
             }
         }
-        //Debug.Log("Couldnt find canvas");
         return null;
     }
 
@@ -114,7 +109,6 @@ public class PickUpItems : MonoBehaviour
 
         yield return new WaitForSeconds(timeToWait);
         Destroy(objectToDestroy.gameObject);
-        //Debug.Log("Child Deleted");
 
         if (stationaryObject)
             SetChildProductActive(true, "goods", productObj.name);
@@ -166,7 +160,8 @@ public class PickUpItems : MonoBehaviour
     { //actiavtes or deactivates the product with productname (from goodsTransform with targetChild's name) and after some time, destroys (or not) the "animation" product
         Transform goodsTransfrom = null;
 
-        foreach (Transform childOfGameObject in transform) {
+        foreach (Transform childOfGameObject in transform)
+        {
             if (childOfGameObject.name.Equals(targetChild, StringComparison.OrdinalIgnoreCase))
                 goodsTransfrom = childOfGameObject;
         }
@@ -209,7 +204,6 @@ public class PickUpItems : MonoBehaviour
     internal void SpawmAnimationProduct(string targetChild, bool destroyTargetChild) //Spawns the animation products in the same spot as "goods-top" for its reuse
     {
         GameObject clone;
-        
 
         foreach (Transform childOfGameObject in transform)
         {

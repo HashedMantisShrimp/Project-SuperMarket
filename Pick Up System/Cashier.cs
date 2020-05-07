@@ -1,15 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Cashier : MonoBehaviour
 {
     private SoundPlayer soundPlayer;
-    private CartItemManager cartItemManager = null;
-    private PickUpItems cartPickUpSystem = null;
+    private CartItemManager cartItemManager;
+    private QuestManager questManager;
+    private PickUpItems cartPickUpSystem;
+    private List<string> productsInCart;
 
     void Start()
     {
         soundPlayer = FindObjectOfType<SoundPlayer>();
+        questManager = FindObjectOfType<QuestManager>();
     }
 
     #region OnTrigger Functions
@@ -19,7 +23,7 @@ public class Cashier : MonoBehaviour
         if (IsTargetCollider(cart))
         {
             cartItemManager = cartPickUpSystem.itemManager;
-
+            productsInCart = cartItemManager.ReturnCartProducts();
             if(cartItemManager.IsAnyProductChecked())
             cartPickUpSystem.canvasBuyItems.SetActive(true);
         }
@@ -32,11 +36,7 @@ public class Cashier : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.R))
             {
                 cartPickUpSystem.canvasBuyItems.SetActive(false);
-                cartItemManager.CheckProduct(false);
-                cartPickUpSystem.SpawmAnimationProduct("goods-top", true);
-                cartPickUpSystem.SetChildProductActive(false, "goods");
-                soundPlayer.PlaySoundClip("Writting"); // delete this or find a way to further increase its volume
-                soundPlayer.PlaySoundClip("Cashier");
+                CheckOutProducts();
             }
         }
     }
@@ -63,7 +63,21 @@ public class Cashier : MonoBehaviour
                 isTarget = true;
             }
         }
-
         return isTarget;
+    }
+
+    private void CheckOutProducts()
+    {
+        foreach (string product in productsInCart)
+        {
+            if (questManager.IsQuestproduct(product) && !questManager.HasPlayerAcquiredProduct(product))
+                questManager.PlayerAcquiredProduct(true, product);
+        }
+
+        cartItemManager.CheckOutCartProducts();
+        cartPickUpSystem.SpawmAnimationProduct("goods-top", true);
+        cartPickUpSystem.SetChildProductActive(false, "goods");
+        soundPlayer.PlaySoundClip("Writting"); // delete this or find a way to further increase its volume
+        soundPlayer.PlaySoundClip("Cashier");
     }
 }
