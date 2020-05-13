@@ -7,16 +7,13 @@ public class DialogueManager : MonoBehaviour
     private Queue<string> dialogueQueue;
     private PlayerMovement playerMovement;
     public GameObject playerDialogueBox;
-    private QuestManager questManager;
     private TMPro.TextMeshProUGUI textMeshPro;
     internal bool dialogueInitiated;
-    private List<string> questProductList;
 
     #region Init Functions
 
     private void Start()
     {
-        questManager = FindObjectOfType<QuestManager>();
         playerMovement = FindObjectOfType<PlayerMovement>();
         dialogueQueue = new Queue<string>();
         textMeshPro = playerDialogueBox.GetComponent<TMPro.TextMeshProUGUI>();
@@ -34,28 +31,37 @@ public class DialogueManager : MonoBehaviour
     #endregion
 
     #region Internal Functions
-
-    internal void DisplayInstruction(bool activate, bool setInstruction)
-    {
-        if(setInstruction)
-        textMeshPro.SetText("Press R to talk");
-
-        playerDialogueBox.SetActive(activate);
-    }
-
-    internal void StartQuestDialogue(Dialogue dialogue, List<string> requiredProducts)
+    
+    internal void StartQuestDialogue(Dialogue dialogue)
     {
         dialogueQueue.Clear();
-        questProductList = requiredProducts;
 
         foreach (string sentence in dialogue.sentences)
         {
             dialogueQueue.Enqueue(sentence);
         }
         dialogueQueue.Enqueue(dialogue.questSentence);
-        ActivatePlayerMovement(false);
+        TogglePlayerMovement(false);
         DisplayNextDialogue();
         dialogueInitiated = true;
+    }
+
+    internal void StartIdleDialogue(string idleSentence)
+    {
+        dialogueQueue.Clear();
+        TogglePlayerMovement(false);
+        dialogueQueue.Enqueue(idleSentence);
+        DisplayNextDialogue();
+
+        dialogueInitiated = true;
+    }
+
+    internal void DisplayInstruction(bool activate, bool setInstruction)
+    {
+        if (setInstruction)
+            textMeshPro.SetText("Press R to talk");
+
+        playerDialogueBox.SetActive(activate);
     }
     #endregion
 
@@ -76,29 +82,18 @@ public class DialogueManager : MonoBehaviour
 
     private void EndDialogue()
     {
-        Debug.Log("End of dialogueQueue");
         dialogueInitiated = false;
+        Debug.Log("End of dialogueQueue");
         DisplayInstruction(false, false);
-        ActivateQuestItems(questProductList);
-        ActivatePlayerMovement(true);
+        TogglePlayerMovement(true);
     }
 
-    private void ActivatePlayerMovement(bool activate)
+    private void TogglePlayerMovement(bool activate)
     {
         if (playerMovement != null)
         {
             playerMovement.enabled = activate;
         }
-    }
-
-    private void ActivateQuestItems(List<string> requiredProducts)
-    {
-        foreach (string product in requiredProducts)
-        {
-            questManager.ActivateQuestProduct(true, product);
-        }
-
-        Debug.Log("Quest Items activated");
     }
     #endregion
 

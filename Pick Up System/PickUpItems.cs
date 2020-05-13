@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PickUpItems : MonoBehaviour
 {
@@ -26,8 +27,8 @@ public class PickUpItems : MonoBehaviour
     {
         productScript = FindObjectOfType<Products>();
         soundPlayer = FindObjectOfType<SoundPlayer>();
-        canvasPickUpItems = FindCanvas("Canvas-P");
-        canvasBuyItems = FindCanvas("Canvas-C");
+        canvasPickUpItems = FindCanvas("Canvas-PickUpItems");
+        canvasBuyItems = FindCanvas("Canvas-BuyItems");
         playerScript = FindObjectOfType<PlayerMovement>();
         AssignAnimationProduct("goods-top");
     }
@@ -47,6 +48,7 @@ public class PickUpItems : MonoBehaviour
     {
         if ((canvasPickUpItems != null) && IsTargetTrigger(objectCollided) && playerScript.hasKart)
         {
+            ChangeCanvasText(canvasPickUpItems, productObj.name);
             if (!itemManager.IsProductChecked(productObj.name))
             {
                 canvasPickUpItems.SetActive(true);
@@ -113,6 +115,21 @@ public class PickUpItems : MonoBehaviour
         if (stationaryObject)
             SetChildProductActive(true, "goods", productObj.name);
     }
+
+    private void ChangeCanvasText(GameObject canvas, string product)
+    {
+        Text input = null;
+
+        if (canvas.TryGetComponent(out Canvas c) )
+        {
+            input = canvas.GetComponentInChildren<Text>();
+            input.GetComponent<Text>().text = $"Press R to Get {product}";
+
+            Debug.Log($"<color=yellow> Canvas text was changed</color>: {input.text}");
+          //  Debug.Log($"<color=yellow> Text element</color>: {input}", input);
+        }
+    }
+
     #endregion
 
     #region SetChildProductActive functions

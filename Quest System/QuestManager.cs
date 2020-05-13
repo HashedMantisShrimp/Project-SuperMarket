@@ -27,7 +27,7 @@ public class QuestManager : MonoBehaviour
             if (productName.Equals(item.itemName , StringComparison.OrdinalIgnoreCase))
             {
                 item.requiresProduct = isRequired;
-                Debug.Log($"Product {item.itemName} is quest item:{isRequired}");
+               // Debug.Log($"Product {item.itemName} is quest item:{isRequired}");
             }
         }
     }

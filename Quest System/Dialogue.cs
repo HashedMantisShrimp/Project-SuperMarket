@@ -7,24 +7,30 @@ using UnityEngine.AI;
 public class Dialogue: MonoBehaviour
 {
     public string charName;
+
     [TextArea(3,10)]
-    public string[] sentences;
+    public string[] sentences; //The sentences written on the editor for specific NPC
     internal string questSentence;
-    private DialogueManager manager;
-    //private Products productScript;
+    private DialogueManager dialogueManager;
+    private QuestManager questManager;
     public ProductNeeded [] characterProductList = new ProductNeeded[8];
     List<string> productsRequired;
+    private bool questDelivered = false;
+    private IdleDialogue idleDialogue;
 
+    #region Init Functions
     private void Awake()
     {
-        manager = FindObjectOfType<DialogueManager>();
+        dialogueManager = FindObjectOfType<DialogueManager>();
+        questManager = FindObjectOfType<QuestManager>();
+        AssignIdleDialogue();
     }
 
     private void Start()
     {
         productsRequired = ProductsRequired();
     }
-
+    #endregion
 
     #region OnTrigger Functions
 
@@ -32,7 +38,8 @@ public class Dialogue: MonoBehaviour
     {
         if (IsPlayerTrigger(player))
         {
-            manager.DisplayInstruction(true, true);
+            dialogueManager.DisplayInstruction(true, true);
+            ToggleNPCMovement(false);
         }
     }
 
@@ -40,12 +47,20 @@ public class Dialogue: MonoBehaviour
     {
         if (IsPlayerTrigger(player))
         {
-            if (Input.GetKeyDown(KeyCode.R) && !manager.dialogueInitiated)
+            if (Input.GetKeyDown(KeyCode.R) && !dialogueManager.dialogueInitiated)
             {
-                transform.parent.GetComponent<WanderingAI>().enabled = false; //check for null results later
-                transform.parent.GetComponent<NavMeshAgent>().enabled = false;
-                questSentence = SentenceForNeededProducts();
-                manager.StartQuestDialogue(this, productsRequired);
+                if (!questDelivered)
+                {
+                    questSentence = SentenceForNeededProducts();
+                    ActivateQuestItems(productsRequired);
+                    dialogueManager.StartQuestDialogue(this);
+                    questDelivered = true;
+                }
+                else
+                {
+                    StartIdleDialogue();
+                }
+                
             }
         }
     }
@@ -54,9 +69,10 @@ public class Dialogue: MonoBehaviour
     {
         if (IsPlayerTrigger(player))
         {
-            transform.parent.GetComponent<WanderingAI>().enabled = true; //check for null results later Or change to Event System ThingaMaging?
-            transform.parent.GetComponent<NavMeshAgent>().enabled = true;
+            dialogueManager.DisplayInstruction(false, false);
+            ToggleNPCMovement(true);
         }
+            
     }
     #endregion
 
@@ -70,7 +86,7 @@ public class Dialogue: MonoBehaviour
         
         int counter = 0;
 
-        Debug.Log($"productsRequired amount of items: {productsRequired.Count}");
+        //Debug.Log($"productsRequired amount of items: {productsRequired.Count}");
 
         foreach (string item in productsRequired)
         {
@@ -87,7 +103,7 @@ public class Dialogue: MonoBehaviour
                 itemsSentence += $"{item}, ";
             }
 
-            Debug.Log($"product: {item}, counter: {counter}");
+            //Debug.Log($"product: {item}, counter: {counter}");
             counter++;
         }
 
@@ -105,9 +121,12 @@ public class Dialogue: MonoBehaviour
             if (product.requiresItem)
             {
                 productsRequired.Add(product.item.name);
+                idleDialogue.SetQuestItem(product.itemName, true); //idleDialogue Quest items are assigned here, is this the best place?
+               // Debug.Log($"{product.itemName} is quest item");
             }
         }
 
+        idleDialogue.FillUpIDList();
         return productsRequired;
     }
 
@@ -129,6 +148,43 @@ public class Dialogue: MonoBehaviour
        // Debug.Log($"isPlayer Collider name: {isPlayer.name}");
        // Debug.Log("IsPlayerTrigger: false");
         return false;
+    }
+
+    private void ToggleNPCMovement( bool toggle)
+    {
+        transform.parent.GetComponent<WanderingAI>().enabled = toggle; //check for null results later? Change to Event System ThingaMaging?
+        transform.parent.GetComponent<NavMeshAgent>().enabled = toggle;
+    }
+
+    private void AssignIdleDialogue()
+    {
+        if (gameObject.TryGetComponent(out IdleDialogue _idleDialogue))
+        {
+            idleDialogue = _idleDialogue;
+        }
+        else
+        {
+            idleDialogue = null;
+            Debug.Log("idleDialogue could not be found");
+        }
+    }
+
+    private void StartIdleDialogue()
+    {
+        string idleSentence = idleDialogue.GetRandomIdleSentence(); 
+
+        dialogueManager.StartIdleDialogue(idleSentence);
+
+    }
+
+    private void ActivateQuestItems(List<string> requiredProducts)
+    {
+        foreach (string product in requiredProducts)
+        {
+            questManager.ActivateQuestProduct(true, product);
+        }
+
+        Debug.Log("Quest Items activated");
     }
     #endregion
 }
