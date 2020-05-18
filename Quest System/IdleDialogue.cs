@@ -1,13 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System;
 using UnityEngine;
-using UnityEngine.AI;
 
 
 public class IdleDialogue : MonoBehaviour
 {//TODO: Impelement function to check if previous item and/or sentence has been used before;
     public IdleSentences[] idleSentences = new IdleSentences[6];
+    public QuestInquisitionSentences otherSentences = new QuestInquisitionSentences();
     internal List<int> questItemIDList = new List<int>();
     private int randomSentenceID = -1; //no need to be -1
     private int randomItemID = -1;
@@ -26,18 +25,18 @@ public class IdleDialogue : MonoBehaviour
             IdleSentences idleSentenceClass = new IdleSentences();
 
             idleSentenceClass = idleSentences[randomQuestItemID];
-            Debug.Log($"<color=red>idleSentenceClass item</color>: {idleSentenceClass.itemName}");
+           // Debug.Log($"<color=red>idleSentenceClass item</color>: {idleSentenceClass.itemName}");
             int totalSentences = idleSentenceClass.randomSentences.Length;
 
             if (totalSentences > 1)
             {
                 randomSentenceID = r.Next(0, totalSentences);
-                Debug.Log($"totalSentences: {totalSentences}, randomSentenceID: {randomSentenceID}");
+              //  Debug.Log($"totalSentences: {totalSentences}, randomSentenceID: {randomSentenceID}");
             }
             else if (totalSentences == 1)
             {
                 randomSentenceID = 0;
-                Debug.Log($"totalSentences (should be 1): {totalSentences}, randomSentenceID (should be 0): {randomSentenceID}");
+              //  Debug.Log($"totalSentences (should be 1): {totalSentences}, randomSentenceID (should be 0): {randomSentenceID}");
             }
             
             randomIdleSentence = idleSentenceClass.randomSentences[randomSentenceID];
@@ -56,7 +55,7 @@ public class IdleDialogue : MonoBehaviour
             System.Random r = new System.Random();
             int temporaryItemID = -1;
 
-            Debug.Log($"Number of Idle Quest Items: {questItemIDList.Count}");
+           // Debug.Log($"Number of Idle Quest Items: {questItemIDList.Count}");
 
             do
             {
@@ -66,8 +65,8 @@ public class IdleDialogue : MonoBehaviour
 
             randomItemID = temporaryItemID;
 
-            Debug.Log($"<color=yellow>Random quest position number</color>: {randomItemID}");
-            Debug.Log($"<color=green>final value</color> <color=yellow>Random quest item number</color>: {questItemIDList[randomItemID]}");
+           // Debug.Log($"<color=yellow>Random quest position number</color>: {randomItemID}");
+           // Debug.Log($"<color=green>final value</color> <color=yellow>Random quest item number</color>: {questItemIDList[randomItemID]}");
             return questItemIDList[randomItemID];
         }
 
@@ -83,7 +82,7 @@ public class IdleDialogue : MonoBehaviour
             if (item.isQuestItem)
             {
                 questItemIDList.Add(counter);
-                Debug.Log($"<color=red>position of item</color> in idleSentences: {counter}");
+              //  Debug.Log($"<color=red>position of item</color> in idleSentences: {counter}");
             }
                 
             counter++;
@@ -101,7 +100,7 @@ public class IdleDialogue : MonoBehaviour
             if (item.itemName.Equals(productName, StringComparison.OrdinalIgnoreCase))
             {
                 item.isQuestItem = activate;
-                Debug.Log($"{item.itemName} is idle dialogue quest item");
+               // Debug.Log($"{item.itemName} is idle dialogue quest item");
                 if (activate)
                 {
                     currentQuestitemsCount++;
@@ -125,4 +124,23 @@ public class IdleSentences
 
     [TextArea(1, 5)]
     public string[] randomSentences = new string[2];
+}
+
+[Serializable]
+public class QuestInquisitionSentences
+{
+    [TextArea(1, 5)]
+    public string HasPlayerCompletedQuest = "Do you have my things?";
+
+    [TextArea(1, 5)]
+    public string ThankPlayerForItems = "Thank you for these! It must have been a hassle.";
+
+    [TextArea(1, 5)]
+    public string WhyDidYouLie = "Seems like you don't have them actually... Come back when you have them.";
+
+    [TextArea(1, 5)]
+    public string WhyYouAlwaysLying = "Why are you always lying? You dont have the items, it's easier to tell the truth, y'know?";
+
+    [TextArea(1, 5)]
+    public string AlrightGoodLuck = "Okay then, good luck on your journey!";
 }

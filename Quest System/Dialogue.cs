@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 public class Dialogue: MonoBehaviour
-{
+{ //TODO: Make Computer generate quest with random items (that do not coincide with other previous existing questItems
     public string charName;
 
     [TextArea(3,10)]
@@ -15,8 +15,12 @@ public class Dialogue: MonoBehaviour
     private QuestManager questManager;
     public ProductNeeded [] characterProductList = new ProductNeeded[8];
     List<string> productsRequired;
-    private bool questDelivered = false;
+    private bool questDeliveredToPlayer = false;
+    private bool questDeliveredByPlayer = false;
     private IdleDialogue idleDialogue;
+    private int questID;
+    private bool questComplete = false;
+    private int playerLieCounter =0;
 
     #region Init Functions
     private void Awake()
@@ -29,6 +33,16 @@ public class Dialogue: MonoBehaviour
     private void Start()
     {
         productsRequired = ProductsRequired();
+        questID = (questManager.SetNewQuest(charName, productsRequired));
+        Debug.Log($"NPC name: <color=blue>{charName}</color> questID: {questID}");
+    }
+
+    private void Update()
+    {
+        if (questDeliveredByPlayer)
+        {
+            ResetValues();
+        }
     }
     #endregion
 
@@ -40,27 +54,36 @@ public class Dialogue: MonoBehaviour
         {
             dialogueManager.DisplayInstruction(true, true);
             ToggleNPCMovement(false);
+
+            if (questDeliveredToPlayer)
+            {
+                questComplete = questManager.IsQuestComplete(questID);
+                dialogueManager.SetCurrentNecessaryValues(idleDialogue.otherSentences, questComplete);
+                Debug.Log($"questComplete: <color=purple>{questComplete}</color>");
+            }
         }
+        Debug.Log($"questDeliveredToPlayer: {questDeliveredToPlayer}");
     }
 
     private void OnTriggerStay(Collider player)
     {
+        Debug.Log($"<color=cyan>dialogueInitiated</color>: {dialogueManager.dialogueInitiated}");
+
         if (IsPlayerTrigger(player))
         {
             if (Input.GetKeyDown(KeyCode.R) && !dialogueManager.dialogueInitiated)
             {
-                if (!questDelivered)
+                if (!questDeliveredToPlayer)
                 {
                     questSentence = SentenceForNeededProducts();
-                    ActivateQuestItems(productsRequired);
+                    ActivateQuestItems(productsRequired, true);
                     dialogueManager.StartQuestDialogue(this);
-                    questDelivered = true;
+                    questDeliveredToPlayer = true;
                 }
                 else
                 {
-                    StartIdleDialogue();
+                    StartIdleDialogue(idleDialogue.GetRandomIdleSentence(), true);
                 }
-                
             }
         }
     }
@@ -71,6 +94,7 @@ public class Dialogue: MonoBehaviour
         {
             dialogueManager.DisplayInstruction(false, false);
             ToggleNPCMovement(true);
+            RetrieveValues();
         }
             
     }
@@ -122,7 +146,10 @@ public class Dialogue: MonoBehaviour
             {
                 productsRequired.Add(product.item.name);
                 idleDialogue.SetQuestItem(product.itemName, true); //idleDialogue Quest items are assigned here, is this the best place?
-               // Debug.Log($"{product.itemName} is quest item");
+                                                                   // Debug.Log($"{product.itemName} is quest item");
+            } else if (!product.requiresItem && productsRequired.Contains(product.itemName))
+            {
+                productsRequired.Remove(product.itemName);
             }
         }
 
@@ -169,22 +196,52 @@ public class Dialogue: MonoBehaviour
         }
     }
 
-    private void StartIdleDialogue()
+    private void StartIdleDialogue(string idleSentence, bool activateOtherDialogue)
     {
-        string idleSentence = idleDialogue.GetRandomIdleSentence(); 
-
-        dialogueManager.StartIdleDialogue(idleSentence);
-
+        if (activateOtherDialogue)
+        {
+            dialogueManager.StartIdleDialogue(idleSentence, true);
+        }
+        else
+        {
+            dialogueManager.StartIdleDialogue(idleSentence, false);
+        }
+        
     }
 
-    private void ActivateQuestItems(List<string> requiredProducts)
+    private void ActivateQuestItems(List<string> requiredProducts, bool activate)
     {
         foreach (string product in requiredProducts)
         {
-            questManager.ActivateQuestProduct(true, product);
+            questManager.ActivateQuestProduct(activate, product);
         }
 
-        Debug.Log("Quest Items activated");
+       // Debug.Log("Quest Items activated");
+    }
+
+    private void ResetQuestItems(List<string> requiredProducts)
+    {
+        foreach (string product in requiredProducts)
+        {
+            questManager.ResetQuestProduct(product);
+        }
+    }
+
+    private void RetrieveValues()
+    {
+        playerLieCounter = dialogueManager.ReturnLieCounter();
+        questDeliveredByPlayer = dialogueManager.QuestDeliveredByPlayer();
+    }
+
+    private void ResetValues()
+    {
+        questManager.RemoveQuest(questID);
+        ResetQuestItems(productsRequired);
+        questDeliveredToPlayer = false;
+        questDeliveredByPlayer = false;
+        questComplete = false;
+        playerLieCounter = 0;
+        Debug.Log("<color=purple>Resetting Values</color>.");
     }
     #endregion
 }
