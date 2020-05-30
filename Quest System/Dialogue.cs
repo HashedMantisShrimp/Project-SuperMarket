@@ -1,11 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class Dialogue: MonoBehaviour
-{ //TODO: Make Computer generate quest with random items (that do not coincide with other previous existing questItems
+{
     public string charName;
 
     [TextArea(3,10)]
@@ -15,12 +14,12 @@ public class Dialogue: MonoBehaviour
     private QuestManager questManager;
     public ProductNeeded [] characterProductList = new ProductNeeded[8];
     List<string> productsRequired;
+    HashSet<int> previousItems = new HashSet<int>();
     private bool questDeliveredToPlayer = false;
     private bool questDeliveredByPlayer = false;
     private IdleDialogue idleDialogue;
     private int questID;
-    private bool questComplete = false;
-    private int playerLieCounter =0;
+    private int playerLieCounter;
 
     #region Init Functions
     private void Awake()
@@ -32,8 +31,8 @@ public class Dialogue: MonoBehaviour
 
     private void Start()
     {
-        productsRequired = ProductsRequired();
-        questID = (questManager.SetNewQuest(charName, productsRequired));
+        productsRequired = AssignProductsRequired();
+        questID = questManager.SetNewQuest(charName, productsRequired);
         Debug.Log($"NPC name: <color=blue>{charName}</color> questID: {questID}");
     }
 
@@ -57,9 +56,7 @@ public class Dialogue: MonoBehaviour
 
             if (questDeliveredToPlayer)
             {
-                questComplete = questManager.IsQuestComplete(questID);
-                dialogueManager.SetCurrentNecessaryValues(idleDialogue.otherSentences, questComplete);
-                Debug.Log($"questComplete: <color=purple>{questComplete}</color>");
+                dialogueManager.SetCurrentNecessaryValues(idleDialogue.otherSentences, questID);
             }
         }
         Debug.Log($"questDeliveredToPlayer: {questDeliveredToPlayer}");
@@ -96,7 +93,6 @@ public class Dialogue: MonoBehaviour
             ToggleNPCMovement(true);
             RetrieveValues();
         }
-            
     }
     #endregion
 
@@ -136,7 +132,7 @@ public class Dialogue: MonoBehaviour
         return finalSentence;
     }
 
-    private List<string> ProductsRequired()
+    private List<string> AssignProductsRequired()
     {
         List<string> productsRequired = new List<string>();
 
@@ -146,8 +142,8 @@ public class Dialogue: MonoBehaviour
             {
                 productsRequired.Add(product.item.name);
                 idleDialogue.SetQuestItem(product.itemName, true); //idleDialogue Quest items are assigned here, is this the best place?
-                                                                   // Debug.Log($"{product.itemName} is quest item");
-            } else if (!product.requiresItem && productsRequired.Contains(product.itemName))
+                // Debug.Log($"{product.itemName} is quest item");
+            } else if (!product.requiresItem && productsRequired.Contains(product.itemName)) //TODO: List.Contains is not O(1), make it be?
             {
                 productsRequired.Remove(product.itemName);
             }
@@ -196,9 +192,9 @@ public class Dialogue: MonoBehaviour
         }
     }
 
-    private void StartIdleDialogue(string idleSentence, bool activateOtherDialogue)
+    private void StartIdleDialogue(string idleSentence, bool activateIdleDialogue)
     {
-        if (activateOtherDialogue)
+        if (activateIdleDialogue)
         {
             dialogueManager.StartIdleDialogue(idleSentence, true);
         }
@@ -229,20 +225,84 @@ public class Dialogue: MonoBehaviour
 
     private void RetrieveValues()
     {
-        playerLieCounter = dialogueManager.ReturnLieCounter();
-        questDeliveredByPlayer = dialogueManager.QuestDeliveredByPlayer();
+        playerLieCounter = questManager.GetLieCounter(questID);
+        questDeliveredByPlayer = questManager.HasQuestBeenDeliveredByPlayer(questID);
+    }
+
+    private void AssignNewQuestItems()
+    {
+        System.Random random = new System.Random();
+        int counter = 0;
+        bool listLengthSet = false;
+        int listLength = characterProductList.Length;
+        int randomNumberOfQuestItems;
+        int itemID;
+
+        Debug.Log($"Initial characterProductList length: {listLength}");
+
+        do
+        {
+            if ((characterProductList[listLength-1].itemName != string.Empty))
+            {
+                listLengthSet = true;
+               // Debug.Log($"<color=red>itemFound</color> during list length operation: {characterProductList[listLength - 1].itemName}");
+               // Debug.Log($"<color=red> itemFound.gameObject =</color> {characterProductList[listLength - 1].item}");
+               // Debug.Log($"<color=red> itemFound</color> at position: {listLength-1}");
+            }
+            else
+            {
+               // Debug.Log("<color=red> Reached listLength-- </color>");
+                listLength--;
+            }
+        }
+        while (!listLengthSet);
+
+        Debug.Log($"characterProductList updated length: {listLength}");
+
+        for (int i=0; i < listLength; i++)
+        {
+            if (characterProductList[i].requiresItem)
+            {
+                previousItems.Add(counter);
+                characterProductList[i].requiresItem = false;
+            }
+            counter++;
+        }
+
+        randomNumberOfQuestItems = random.Next(1, (listLength-previousItems.Count)+1);
+        Debug.Log($"randomNumberOfQuestItems: {randomNumberOfQuestItems}, available number of items to choose from: { listLength - previousItems.Count}. Exclusive Upper bound: {(listLength - previousItems.Count)+1}");
+
+        for (int i = 0; i < randomNumberOfQuestItems; i++)
+        {
+            do
+            {
+                itemID = random.Next(0, listLength);
+            }
+            while (previousItems.Contains(itemID) && characterProductList[itemID].requiresItem);
+
+            characterProductList[itemID].requiresItem = true;
+            Debug.Log($"<color=yellow>New Quest Product</color>: {characterProductList[itemID].itemName}");
+        }
+
+        previousItems.Clear();
+        Debug.Log($"<color=yellow>Number of items</color> for new quest: {randomNumberOfQuestItems}");
     }
 
     private void ResetValues()
     {
         questManager.RemoveQuest(questID);
-        ResetQuestItems(productsRequired);
+        ResetQuestItems(productsRequired); //might be unnecessary?
         questDeliveredToPlayer = false;
         questDeliveredByPlayer = false;
-        questComplete = false;
         playerLieCounter = 0;
+
+        AssignNewQuestItems();
+        productsRequired = AssignProductsRequired();
+        questID = questManager.SetNewQuest(charName, productsRequired);
+        Debug.Log($"NPC name: <color=blue>{charName}</color> new questID: {questID}");
         Debug.Log("<color=purple>Resetting Values</color>.");
     }
+
     #endregion
 }
 

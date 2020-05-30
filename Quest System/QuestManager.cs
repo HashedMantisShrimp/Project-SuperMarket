@@ -84,6 +84,57 @@ public class QuestManager : MonoBehaviour
         return false;
     }
 
+    internal void SetQuestDeliveredByPlayer(int questID, bool questHasBeenDelivered)
+    {
+        if (quests.ContainsKey(questID))
+        {
+            quests[questID].questDeliveredByPlayer = questHasBeenDelivered;
+        }
+    }
+
+    internal bool HasQuestBeenDeliveredByPlayer(int questID)
+    {
+
+        if (quests.ContainsKey(questID))
+        {
+            return quests[questID].questDeliveredByPlayer;
+        }
+
+        Debug.Log($"<color=red>WARNING</color> A quest with ID: {questID} could not be found, returning false.");
+        return false;
+    }
+
+    internal int GetLieCounter(int questID)
+    {
+        if (quests.ContainsKey(questID))
+        {
+            return quests[questID].lieCounter;
+        }
+
+        Debug.Log($"<color=red>WARNING</color> A quest with ID: {questID} could not be found, returning -1.");
+        return -1;
+    }
+
+    internal void IncreaseLieCounter(int questID, bool increase)
+    {
+        if (quests.ContainsKey(questID))
+        {
+            if (increase)
+            {
+                quests[questID].lieCounter++;
+            }
+            else
+            {
+                quests[questID].lieCounter--;
+            }
+
+        }
+        else
+        {
+            Debug.Log($"<color=red>WARNING</color> A quest with ID: {questID} could not be found. From <color=darkblue> IncreaseLieCounter</color> in QuestManager.");
+        }
+    }
+
     internal int SetNewQuest(string charName, List<string> productsNeeded)
     {
         bool questAlreadyExists = false;
@@ -92,7 +143,8 @@ public class QuestManager : MonoBehaviour
         {
             npcName = charName,
             questItems = productsNeeded,
-            questDelivered = false,
+            lieCounter = 0,
+            questDeliveredByPlayer = false,
             questHasBeenCompleted = false
         };
 
@@ -100,11 +152,15 @@ public class QuestManager : MonoBehaviour
         {
             for (int i = 0; i < quests.Count; i++)
             {
-                if (quests[i].npcName.Equals(newQuest.npcName))
+                if (quests.ContainsKey(i))
                 {
-                    questAlreadyExists = true;
-                    break;
+                    if (quests[i].npcName.Equals(newQuest.npcName))
+                    {
+                        questAlreadyExists = true;
+                        break;
+                    }
                 }
+                
             }
         }
         
@@ -124,7 +180,7 @@ public class QuestManager : MonoBehaviour
 
     internal void RemoveQuest(int ID)
     {
-        if (quests[ID] != null)
+        if (quests.ContainsKey(ID))
         {
             quests.Remove(ID);
             Debug.Log($"Quest with ID: {ID} <color=green>removed successfully</color>");
@@ -138,7 +194,7 @@ public class QuestManager : MonoBehaviour
         bool questComplete = false;
         int itemsAcquired = 0;
 
-        if (quests[questID] != null)
+        if (quests.ContainsKey(questID))
         {
             questItemList = quests[questID].questItems;
 
@@ -219,6 +275,7 @@ public class Quest
 {
     public string npcName;
     internal List<string> questItems = new List<string>();
-    internal bool questDelivered;
+    internal int lieCounter;
+    internal bool questDeliveredByPlayer;
     internal bool questHasBeenCompleted;
 }

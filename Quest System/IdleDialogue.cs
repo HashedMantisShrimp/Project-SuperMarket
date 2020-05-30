@@ -77,6 +77,10 @@ public class IdleDialogue : MonoBehaviour
     internal void FillUpIDList()
     { //Inserts the IDs or position of quest Items in array
         int counter = 0;
+
+        if (questItemIDList.Count > 0)
+            questItemIDList.Clear();
+
         foreach (IdleSentences item in idleSentences)
         {
             if (item.isQuestItem)
@@ -91,7 +95,7 @@ public class IdleDialogue : MonoBehaviour
        // Debug.Log($" prevQuestItemsCount: { prevQuestItemsCount}");
     }
 
-    internal void SetQuestItem(string productName, bool activate)
+    internal void SetQuestItem(string productName, bool activate) //TODO: Improve this part of the code, make the loop to activate/deactivate happen solely here?
     {
         //Debug.Log($" prevQuestItemsCount (from SetQuestItem): { prevQuestItemsCount}");
 

@@ -9,10 +9,11 @@ public class DialogueManager : MonoBehaviour
     public GameObject playerDialogueBox;
     private TMPro.TextMeshProUGUI textMeshPro;
     private QuestInquisitionSentences questInquisitionSentences;
+    private QuestManager questManager;
     internal bool dialogueInitiated;
     private bool questInquisition = false;
     private bool isCurrentQuestComplete;
-    private bool hasCurrentQuestBeenDelivered = false;
+    private int currentQuestID;
     private int currentLieCounter;
 
     #region Init Functions
@@ -20,6 +21,7 @@ public class DialogueManager : MonoBehaviour
     private void Start()
     {
         playerMovement = FindObjectOfType<PlayerMovement>();
+        questManager = FindObjectOfType<QuestManager>();
         dialogueQueue = new Queue<string>();
         textMeshPro = playerDialogueBox.GetComponent<TMPro.TextMeshProUGUI>();
         dialogueInitiated = false;
@@ -73,21 +75,14 @@ public class DialogueManager : MonoBehaviour
         playerDialogueBox.SetActive(activate);
     }
 
-    internal void SetCurrentNecessaryValues(QuestInquisitionSentences otherSentences, bool isQuestComplete)
+    internal void SetCurrentNecessaryValues(QuestInquisitionSentences otherSentences, int questID)
     {
         SetQuestInquisitionSentences(otherSentences);
-        ToggleCurrentQuest(isQuestComplete);
+        currentQuestID = questID;
+        currentLieCounter = questManager.GetLieCounter(questID);
+        ToggleCurrentQuest(questID);
     }
-
-    internal int ReturnLieCounter()
-    {
-        return currentLieCounter;
-    }
-
-    internal bool QuestDeliveredByPlayer()
-    {
-        return hasCurrentQuestBeenDelivered;
-    }
+    
     #endregion
 
     #region Private Functions
@@ -103,8 +98,8 @@ public class DialogueManager : MonoBehaviour
 
         string sentence = dialogueQueue.Dequeue();
         textMeshPro.SetText(sentence);
-        Debug.Log($"sentence dequeued: {sentence}");
-        Debug.Log($"<color=blue> enqueuedOtherSentences</color>: {questInquisition}, <color=blue>dialogueQueueCount</color>: {dialogueQueue.Count}");
+       // Debug.Log($"sentence dequeued: {sentence}");
+       // Debug.Log($"<color=blue> enqueuedOtherSentences</color>: {questInquisition}, <color=blue>dialogueQueueCount</color>: {dialogueQueue.Count}");
         //Debug.Log($"sentence: {sentence}");
     }
 
@@ -124,9 +119,10 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    private void ToggleCurrentQuest(bool isQuestComplete)
+    private void ToggleCurrentQuest(int ID)
     {
-        isCurrentQuestComplete = isQuestComplete;
+        isCurrentQuestComplete = questManager.IsQuestComplete(ID);
+        Debug.Log($"questComplete: <color=purple>{ isCurrentQuestComplete}</color>");
     }
 
     private void SetQuestInquisitionSentences(QuestInquisitionSentences _questInquisitionSentences)
@@ -138,43 +134,41 @@ public class DialogueManager : MonoBehaviour
     {
         if (questInquisition && dialogueQueue.Count == 0)
         {
-            if (questInquisition == true && dialogueQueue.Count == 0)
+            if (Input.GetKeyDown(KeyCode.Y))
             {
-                if (Input.GetKeyDown(KeyCode.Y))
+                Debug.Log("<color=lightblue>Player said yes</color>");
+
+                if (isCurrentQuestComplete)
                 {
-                    Debug.Log("<color=lightblue>Player said yes</color>");
-
-                    if (isCurrentQuestComplete)
-                    {
-                        StartIdleDialogue(questInquisitionSentences.ThankPlayerForItems, false);
-                        hasCurrentQuestBeenDelivered = true;
-                        questInquisition = false;
-                    }
-                    else
-                    {
-                        hasCurrentQuestBeenDelivered = false;
-
-                        if (currentLieCounter > 0)
-                        {
-                            StartIdleDialogue(questInquisitionSentences.WhyYouAlwaysLying, false);
-                        }
-                        else if (currentLieCounter == 0)
-                        {
-                            StartIdleDialogue(questInquisitionSentences.WhyDidYouLie, false);
-                        }
-
-                        currentLieCounter++;
-                        questInquisition = false;
-                    }
+                    StartIdleDialogue(questInquisitionSentences.ThankPlayerForItems, false);
+                    questManager.SetQuestDeliveredByPlayer(currentQuestID, true);
+                    questInquisition = false;
                 }
-                else if (Input.GetKeyDown(KeyCode.N))
+                else
                 {
-                    Debug.Log("<color=darkblue>Player said no</color>");
-                    StartIdleDialogue(questInquisitionSentences.AlrightGoodLuck, false);
-                    hasCurrentQuestBeenDelivered = false;
+                    questManager.SetQuestDeliveredByPlayer(currentQuestID, false);
+
+                    if (currentLieCounter > 0)
+                    {
+                        StartIdleDialogue(questInquisitionSentences.WhyYouAlwaysLying, false);
+                    }
+                    else if (currentLieCounter == 0)
+                    {
+                        StartIdleDialogue(questInquisitionSentences.WhyDidYouLie, false);
+                    }
+
+                    questManager.IncreaseLieCounter(currentQuestID, true);
                     questInquisition = false;
                 }
             }
+            else if (Input.GetKeyDown(KeyCode.N))
+            {
+                Debug.Log("<color=darkblue>Player said no</color>");
+                StartIdleDialogue(questInquisitionSentences.AlrightGoodLuck, false);
+                questManager.SetQuestDeliveredByPlayer(currentQuestID, false);
+                questInquisition = false;
+            }
+        
         }
         else if (dialogueInitiated && Input.GetKeyDown(KeyCode.Space)) // indicate on the UI that player has to press space to progress in the dialogue
         {
